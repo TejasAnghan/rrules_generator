@@ -1,7 +1,5 @@
 library rrules_generator;
 
-/// A Calculator.
-class RRuleGenerator {
- 
- 
-}
+
+
+export 'package:rrules_generator/src/rrules_generator_widget.dart';
