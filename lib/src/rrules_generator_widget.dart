@@ -11,9 +11,10 @@ class RRuleGenerator extends StatefulWidget {
   final padding;
   // ignore: prefer_typing_uninitialized_variables
   final titleStyle;
+  final textStyle;
   const RRuleGenerator({
-    this.titleStyle =
-        const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+    this.textStyle = const TextStyle(color: Color(0xFF969696), fontSize: 16),
+    this.titleStyle = const TextStyle(color: Colors.black, fontSize: 16),
     this.padding = const EdgeInsets.all(20),
     Key? key,
   }) : super(key: key);
@@ -23,51 +24,386 @@ class RRuleGenerator extends StatefulWidget {
 }
 
 class _RRuleGeneratorState extends State<RRuleGenerator> {
+  final TextEditingController _endAfterController = TextEditingController();
   final TextEditingController _startDateContoller = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _everyController = TextEditingController();
-  final TextEditingController _endAfterController = TextEditingController();
+
+  RecurrenceMeta selectedMeta = RecurrenceMeta.onThe;
+  List<String> selectedWeekDayShort = [];
 
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
+  
   String selectedFrequency = CString.yearly;
-  RecurrenceMeta selectedMeta = RecurrenceMeta.onThe;
-  String selectedMonth = CString.jan;
-  String selectedDay = "1";
   String selectedWeekDay = CString.monday;
   String selectedOrdinal = CString.first;
+  String selectedMonth = CString.jan;
   String selectedEnd = CString.never;
+  String selectedDay = "1";
+  String finalRRule = "";
   String everyText = "0";
   String endAfter = "0";
-  List<String> selectedWeekDayShort = [];
-  String finalRRule = "";
 
   @override
   void initState() {
     super.initState();
     _startDateContoller.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
     _endDateController.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
-    _everyController.text = "0";
     _endAfterController.text = "0";
+    _everyController.text = "0";
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: widget.padding,
-      child: Column(
+    return Container(
+      alignment: Alignment.topCenter,
+      color: const Color(0xFFf8f8f8),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            _buildStartSection(),
+            const SizedBox(height: 20),
+            _buildMeta(),
+            const SizedBox(height: 30),
+            _buildEndSection()
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEndOnDate() {
+    return buildColumn(CString.onDate, _endDateTextField());
+  }
+
+  Widget _endAfterTextField() {
+    return Row(
+      children: [
+        Expanded(
+          child: CTextField(
+            controller: _endAfterController,
+            textInputAction: TextInputAction.done,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly
+            ],
+            onChanged: (val) {
+              if (val.isEmpty) {
+                endAfter = "0";
+              } else {
+                endAfter = val;
+              }
+              setState(() {});
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEndAfter() {
+    return buildColumn(CString.executions, _endAfterTextField());
+  }
+
+  Widget _buildEndMeta() {
+    switch (selectedEnd) {
+      case CString.after:
+        return _buildEndAfter();
+      case CString.onDate:
+        return _buildEndOnDate();
+    }
+    return Container();
+  }
+
+  Widget _buildEndSection() {
+    return cContainer(
+      vPadding: 20,
+      child: Row(
         children: [
-          _buildRow(CString.start, _startDateTextField()),
-          const Divider(height: 40, color: Colors.grey),
-          _buildRepeatSection(),
-          const Divider(height: 40, color: Colors.grey),
-          _buildEndSection(),
-          const Divider(height: 40, color: Colors.grey),
-          Text(finalRRule)
+          buildColumn("End", endDropDown()),
+          const SizedBox(width: 10),
+          _buildEndMeta(),
         ],
       ),
     );
   }
+
+  Widget _buildHourlyMeta() {
+    return Column(
+      children: [
+        cContainer(
+          child: Row(
+            children: [
+              buildColumn("Every", _buildEveryTextField(CString.hours))
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDailyMeta() {
+    return Column(
+      children: [
+        cContainer(
+          child: Row(
+            children: [
+              buildColumn("Every", _buildEveryTextField(CString.days))
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWeekDaySelector() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: List.generate(
+                7,
+                (index) => Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (selectedWeekDayShort
+                              .contains(weekDayShort[index])) {
+                            selectedWeekDayShort.remove(weekDayShort[index]);
+                          } else {
+                            selectedWeekDayShort.add(weekDayShort[index]);
+                          }
+                          setState(() {});
+                        },
+                        child: Container(
+                          height: 50,
+                          margin: const EdgeInsets.only(right: 2),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: selectedWeekDayShort
+                                      .contains(weekDayShort[index])
+                                  ? const Color(0xFF0359DA)
+                                  : const Color(0xFF0359DA).withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(5)),
+                          child: Text(
+                            weekDayShort[index],
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    )),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildWeeklyMeta() {
+    return Column(
+      children: [
+        cContainer(
+          child: Row(
+            children: [
+              buildColumn("Every", _buildEveryTextField(CString.week))
+            ],
+          ),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        _buildWeekDaySelector(),
+      ],
+    );
+  }
+
+  Widget buildMonthlyRepeatOn() {
+    return Column(
+      children: [
+        const Divider(),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            buildColumn("Date", monthDropDown()),
+          ],
+        ),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
+  Widget buildMonthlyRepeatOnThe() {
+    return Column(
+      children: [
+        const Divider(),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            buildColumn("Ordinal No.", ordinalDropDown()),
+            const SizedBox(width: 10),
+            buildColumn("Day", weekDayDropDown()),
+          ],
+        ),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
+  Widget _buildMonthlyMeta() {
+    return Column(
+      children: [
+        cContainer(
+          child: Row(
+            children: [
+              buildColumn("Every", _buildEveryTextField(CString.month))
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        cSwitchTile(
+            CString.onday, buildMonthlyRepeatOn(), RecurrenceMeta.onDay),
+        const SizedBox(height: 20),
+        cSwitchTile(
+            CString.onThe, buildMonthlyRepeatOnThe(), RecurrenceMeta.onThe),
+      ],
+    );
+  }
+
+  Widget buildYearlyRepeatOnThe() {
+    return Column(
+      children: [
+        const Divider(),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            buildColumn("Ordinal No.", ordinalDropDown()),
+            const SizedBox(width: 10),
+            buildColumn("Day", dayDropDown()),
+          ],
+        ),
+        const SizedBox(height: 15),
+        Row(children: [buildColumn("Of Month", monthDropDown())]),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
+  Widget buildYearlyRepeatOn() {
+    return Column(
+      children: [
+        const Divider(),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            buildColumn("Month", monthDropDown()),
+            const SizedBox(width: 10),
+            buildColumn("Date", dayDropDown()),
+          ],
+        ),
+        const SizedBox(height: 15),
+      ],
+    );
+  }
+
+  Widget _buildYearlyMeta() {
+    return Column(
+      children: [
+        cSwitchTile(CString.on, buildYearlyRepeatOn(), RecurrenceMeta.on),
+        const SizedBox(height: 20),
+        cSwitchTile(
+            CString.onThe, buildYearlyRepeatOnThe(), RecurrenceMeta.onThe),
+      ],
+    );
+  }
+
+  Widget _buildMeta() {
+    switch (selectedFrequency) {
+      case CString.yearly:
+        return _buildYearlyMeta();
+      case CString.monthly:
+        return _buildMonthlyMeta();
+      case CString.weekly:
+        return _buildWeeklyMeta();
+      case CString.daily:
+        return _buildDailyMeta();
+      case CString.hourly:
+        return _buildHourlyMeta();
+    }
+
+    return Container();
+  }
+
+  Widget _buildStartSection() {
+    return cContainer(
+      child: Row(
+        children: [
+          buildColumn(CString.start, _startDateTextField()),
+          const SizedBox(width: 10),
+          buildColumn(CString.repeat, _buildFrequencyDropdown()),
+        ],
+      ),
+    );
+  }
+
+  Widget buildColumn(title, cwidget) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: widget.titleStyle),
+          const SizedBox(height: 10),
+          cwidget,
+        ],
+      ),
+    );
+  }
+
+  Widget cContainer(
+      {required Widget child, double? hPadding, double? vPadding}) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: hPadding ?? 15, vertical: vPadding ?? 15),
+      decoration: const BoxDecoration(color: Colors.white, boxShadow: [
+        BoxShadow(color: Colors.black12, spreadRadius: 3, blurRadius: 20),
+      ]),
+      child: child,
+    );
+  }
+
+  Widget cSwitchTile(
+    String title,
+    Widget child,
+    RecurrenceMeta type,
+  ) {
+    return cContainer(
+      hPadding: 15,
+      vPadding: 5,
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(title, style: widget.titleStyle),
+              const Spacer(),
+              Switch(
+                  activeColor: Colors.green,
+                  value: type == selectedMeta,
+                  onChanged: (value) {
+                    if (value) {
+                      setState(() {
+                        selectedMeta = type;
+                      });
+                    }
+                  })
+            ],
+          ),
+          if (type == selectedMeta) child,
+        ],
+      ),
+    );
+  }
+
+  //============================================================================
 
   _onStartDateTap() {
     showDatePicker(
@@ -128,8 +464,6 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   Widget _buildEveryTextField(suffix) {
     return Row(
       children: [
-        const Text(CString.every),
-        const SizedBox(width: 10),
         Expanded(
           child: CTextField(
             controller: _everyController,
@@ -144,7 +478,6 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
               } else {
                 everyText = val;
               }
-
               setState(() {});
             },
           ),
@@ -157,6 +490,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
 
   Widget monthDropDown() {
     return _buildDropDown(
+      style: widget.textStyle,
       list: months,
       value: selectedMonth,
       onChanged: (val) {
@@ -170,6 +504,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
 
   Widget dayDropDown({int? count}) {
     return _buildDropDown(
+      style: widget.textStyle,
       list: List.generate(count ?? _getMonthDayCount(selectedMonth),
           (index) => (index + 1).toString()),
       value: selectedDay,
@@ -183,6 +518,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
 
   Widget weekDayDropDown() {
     return _buildDropDown(
+        style: widget.textStyle,
         list: weekDay,
         value: selectedWeekDay,
         onChanged: (val) {
@@ -190,16 +526,12 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
             selectedWeekDay = val!;
           });
         },
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black,
-          overflow: TextOverflow.clip,
-        ),
         padding: const EdgeInsets.only(left: 8, right: 0));
   }
 
   Widget ordinalDropDown() {
     return _buildDropDown(
+        style: widget.textStyle,
         list: ordinal,
         value: selectedOrdinal,
         onChanged: (val) {
@@ -207,296 +539,45 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
             selectedOrdinal = val!;
           });
         },
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black,
-          overflow: TextOverflow.clip,
-        ),
         padding: const EdgeInsets.only(left: 8, right: 0));
   }
 
   Widget endDropDown() {
     return _buildDropDown(
-        list: endDropdownList,
-        value: selectedEnd,
-        onChanged: (val) {
-          setState(() {
-            selectedEnd = val!;
-          });
-        },
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black,
-          overflow: TextOverflow.clip,
-        ),
-        padding: const EdgeInsets.only(left: 8, right: 0));
+      list: endDropdownList,
+      value: selectedEnd,
+      onChanged: (val) {
+        setState(() {
+          selectedEnd = val!;
+        });
+      },
+      style: widget.textStyle,
+      padding: const EdgeInsets.only(left: 8, right: 0),
+    );
   }
 
   Widget _endDateTextField() {
     return GestureDetector(
         onTap: _onEndDateTap,
         child: CTextField(
+          textStyle: widget.textStyle,
           controller: _endDateController,
           enabled: false,
           placeholder: "End Date",
         ));
   }
 
-  Widget _buildEndOnDate() {
-    return _buildRow("", _endDateTextField());
-  }
-
-  Widget _buildEndAfter() {
-    return _buildRow(
-        "",
-        Row(
-          children: [
-            Expanded(
-              child: CTextField(
-                controller: _endAfterController,
-                textInputAction: TextInputAction.done,
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly
-                ],
-                onChanged: (val) {
-                  if (val.isEmpty) {
-                    endAfter = "0";
-                  } else {
-                    endAfter = val;
-                  }
-                  setState(() {});
-                },
-              ),
-            ),
-            const SizedBox(width: 10),
-            const Text(CString.executions),
-          ],
-        ));
-  }
-
-  Widget _buildEndMeta() {
-    switch (selectedEnd) {
-      case CString.after:
-        return _buildEndAfter();
-      case CString.onDate:
-        return _buildEndOnDate();
-    }
-    return Container();
-  }
-
-  Widget _buildEndSection() {
-    return Column(
-      children: [
-        _buildRow("End", endDropDown()),
-        const SizedBox(height: 20),
-        _buildEndMeta(),
-      ],
-    );
-  }
-
-  Widget _buildHourlyRepeatOn() {
-    return _buildEveryTextField(CString.hours);
-  }
-
-  Widget _buildDailyRepeatOn() {
-    return _buildEveryTextField(CString.days);
-  }
-
-  Widget _buildWeekDaySelection() {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(7),
-      child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(
-              7,
-              (index) => Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        if (selectedWeekDayShort
-                            .contains(weekDayShort[index])) {
-                          setState(() {
-                            selectedWeekDayShort.remove(weekDayShort[index]);
-                          });
-                        } else {
-                          setState(() {
-                            selectedWeekDayShort.add(weekDayShort[index]);
-                          });
-                        }
-                      },
-                      child: Container(
-                        color:
-                            selectedWeekDayShort.contains(weekDayShort[index])
-                                ? Themes.primaryColor
-                                : Themes.primaryColor.withOpacity(0.8),
-                        height: 50,
-                        alignment: Alignment.center,
-                        child: Text(weekDayShort[index],
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                            )),
-                      ),
-                    ),
-                  ))),
-    );
-  }
-
-  Widget _buildWeeklyRepeatOn() {
-    return Column(children: [
-      _buildRow("", _buildEveryTextField(CString.week)),
-      const SizedBox(height: 15),
-      _buildWeekDaySelection(),
-    ]);
-  }
-
-  Widget _buildMonthlyOnDay() {
-    return dayDropDown(count: 31);
-  }
-
-  Widget _buildMonthlyOnThe() {
-    return Row(
-      children: [
-        Expanded(child: ordinalDropDown()),
-        const SizedBox(width: 10),
-        Expanded(child: weekDayDropDown()),
-      ],
-    );
-  }
-
-  Widget _buildMonthlyMeta() {
-    switch (selectedMeta) {
-      case RecurrenceMeta.on:
-        return Container();
-      case RecurrenceMeta.onThe:
-        return _buildRow("", _buildMonthlyOnThe());
-      case RecurrenceMeta.onDay:
-        return _buildRow("", _buildMonthlyOnDay());
-    }
-  }
-
-  Widget _buildMonthlyRepeatOn() {
-    return Column(
-      children: [
-        _buildRow("", _buildEveryTextField(CString.month)),
-        _buildRow(
-          "",
-          _buildRadioListTile(
-            title: CString.onday,
-            value: RecurrenceMeta.onDay,
-            groupValue: selectedMeta,
-          ),
-        ),
-        _buildRow(
-          "",
-          _buildRadioListTile(
-            title: CString.onThe,
-            value: RecurrenceMeta.onThe,
-            groupValue: selectedMeta,
-          ),
-        ),
-        const SizedBox(height: 15),
-        _buildMonthlyMeta()
-      ],
-    );
-  }
-
-  Widget _buildYealyOnThe() {
-    return Row(
-      children: [
-        Expanded(child: ordinalDropDown()),
-        const SizedBox(width: 10),
-        Expanded(child: weekDayDropDown()),
-        const SizedBox(width: 10),
-        const Text("of"),
-        const SizedBox(width: 10),
-        Expanded(child: monthDropDown()),
-      ],
-    );
-  }
-
-  Widget _buildYealyOn() {
-    return Row(
-      children: [
-        Expanded(child: monthDropDown()),
-        const SizedBox(width: 10),
-        Expanded(child: dayDropDown()),
-      ],
-    );
-  }
-
-  Widget _buildYearlyMeta() {
-    switch (selectedMeta) {
-      case RecurrenceMeta.on:
-        return _buildRow("", _buildYealyOn());
-      case RecurrenceMeta.onThe:
-        return _buildYealyOnThe();
-      case RecurrenceMeta.onDay:
-        break;
-    }
-
-    return Container();
-  }
-
-  Widget _buildRadioListTile(
-      {required String title,
-      required RecurrenceMeta value,
-      required RecurrenceMeta groupValue}) {
-    return RadioListTile(
-      contentPadding: const EdgeInsets.all(0),
-      title: Text(title),
-      value: value,
-      groupValue: groupValue,
-      onChanged: (RecurrenceMeta? val) {
-        setState(() {
-          selectedMeta = val!;
+  Widget _buildFrequencyDropdown() {
+    return _buildDropDown(
+        list: repeatOn,
+        value: selectedFrequency,
+        style: widget.textStyle,
+        onChanged: (value) {
+          setState(() {
+            selectedFrequency = value!;
+            selectedMeta = RecurrenceMeta.onThe;
+          });
         });
-      },
-    );
-  }
-
-  Widget _buildYearlyRepeatOn() {
-    return Column(
-      children: [
-        _buildRow(
-          "",
-          _buildRadioListTile(
-            title: CString.on,
-            value: RecurrenceMeta.on,
-            groupValue: selectedMeta,
-          ),
-        ),
-        _buildRow(
-          "",
-          _buildRadioListTile(
-            title: CString.onThe,
-            value: RecurrenceMeta.onThe,
-            groupValue: selectedMeta,
-          ),
-        ),
-        const SizedBox(height: 15),
-        _buildYearlyMeta()
-      ],
-    );
-  }
-
-  Widget _buildSubRepeatSaction() {
-    switch (selectedFrequency) {
-      case CString.yearly:
-        return _buildYearlyRepeatOn();
-      case CString.monthly:
-        return _buildMonthlyRepeatOn();
-      case CString.weekly:
-        return _buildWeeklyRepeatOn();
-      case CString.daily:
-        return _buildRow("", _buildDailyRepeatOn());
-      case CString.hourly:
-        return _buildRow("", _buildHourlyRepeatOn());
-    }
-
-    return Container();
   }
 
   Widget _buildDropDown(
@@ -510,43 +591,23 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       width: width,
       padding: padding,
       decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          border: Border.all(color: Colors.black),
           borderRadius: BorderRadius.circular(7)),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-            style: style,
-            isExpanded: true,
-            items: list.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            value: value,
-            onChanged: onChanged),
+          style: style,
+          isExpanded: true,
+          items: list.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          value: value,
+          onChanged: onChanged,
+          // icon:const Icon(Icons.arrow_drop_down_circle_sharp),
+        ),
       ),
-    );
-  }
-
-  Widget _buildRepeatOnDropdown() {
-    return _buildDropDown(
-        list: repeatOn,
-        value: selectedFrequency,
-        onChanged: (value) {
-          setState(() {
-            selectedFrequency = value!;
-          });
-        });
-  }
-
-  Widget _buildRepeatSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildRow(CString.repeat, _buildRepeatOnDropdown()),
-        const SizedBox(height: 20),
-        _buildSubRepeatSaction(),
-      ],
     );
   }
 
@@ -556,25 +617,8 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         child: CTextField(
           controller: _startDateContoller,
           enabled: false,
+          textStyle: widget.textStyle,
           placeholder: "Start Date",
         ));
-  }
-
-  Widget _buildRow(String title, Widget cwidget) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Text(
-            title,
-            style: widget.titleStyle,
-          ),
-        ),
-        const SizedBox(
-          width: 10,
-        ),
-        Expanded(flex: 3, child: cwidget)
-      ],
-    );
   }
 }

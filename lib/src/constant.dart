@@ -69,9 +69,9 @@ class CString {
   static const String weekly = "Weekly";
   static const String daily = "Daily";
   static const String hourly = "Hourly";
-  static const String on = "On";
-  static const String onThe = "On the";
-  static const String onday = "On day";
+  static const String on = "Repeat On";
+  static const String onThe = "Repeat On the";
+  static const String onday = "Repeat On day";
   static const String jan = "Jan";
   static const String feb = "Feb";
   static const String mar = "Mar";
@@ -113,7 +113,7 @@ class CString {
   static const String hours = "Hour(s)";
   static const String after = "After";
   static const String never = "Never";
-  static const String onDate = "On Date";
+  static const String onDate = "Date";
   static const String executions = "Executions.";
 
 }

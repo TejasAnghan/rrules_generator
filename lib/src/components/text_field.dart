@@ -21,15 +21,17 @@ class CTextField extends StatelessWidget {
   final Color? errorTextColor;
   // ignore: prefer_typing_uninitialized_variables
   final inputFormatters;
+  final textStyle;
 
   // ignore: use_key_in_widget_constructors
   const CTextField({
+    this.textStyle,
     this.validator,
     this.focusNode,
     this.onChanged,
     this.controller,
     this.placeholder,
-    this.maxLines=1,
+    this.maxLines = 1,
     this.requestFocus,
     this.iconCallback,
     this.keyboardType,
@@ -46,7 +48,7 @@ class CTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height:  50,
+      height: 50,
       alignment: Alignment.center,
       child: TextFormField(
         enabled: enabled,
@@ -59,13 +61,11 @@ class CTextField extends StatelessWidget {
         obscureText: obscureText,
         onChanged: onChanged,
         keyboardType: keyboardType,
-        inputFormatters:inputFormatters,
+        inputFormatters: inputFormatters,
         cursorColor: Themes.primaryColor,
         textInputAction: textInputAction,
         // scrollPhysics: Themes.defaultPhysics,
-        style: enabled ?? true
-            ? const TextStyle(fontSize: 16)
-            : const TextStyle(fontSize: 16),
+        style: textStyle,
         onFieldSubmitted: (_) =>
             FocusScope.of(context).requestFocus(requestFocus),
         textAlignVertical: TextAlignVertical.center,
@@ -73,7 +73,7 @@ class CTextField extends StatelessWidget {
         decoration: InputDecoration(
           filled: true,
           isDense: true,
-          contentPadding:  const EdgeInsets.only(top:30, right: 10, left:10),
+          contentPadding: const EdgeInsets.only(top: 30, right: 10, left: 10),
           fillColor: fillColor,
           hintText: placeholder,
           errorStyle: TextStyle(color: errorTextColor ?? Colors.white),
