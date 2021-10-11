@@ -109,6 +109,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.0"
+  rrule:
+    dependency: transitive
+    description:
+      name: rrule
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.3"
   rrules_generator:
     dependency: "direct main"
     description:
@@ -149,6 +156,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
+  supercharged_dart:
+    dependency: transitive
+    description:
+      name: supercharged_dart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
   term_glyph:
     dependency: transitive
     description:

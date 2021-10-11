@@ -11,7 +11,7 @@ class Themes {
   static const Color greenColor = Color(0xff006837);
   static const Color textColor33 = Color(0xff333333);
   static const Color textColor66 = Color(0xff666666);
-  static const Color primaryColor = Color(0xffEE7505);
+  static const Color primaryColor = Colors.blueAccent;
   static const Color textFieldBorderColor = Color(0xffE2E2E8);
   static const Color errorColor = CupertinoColors.destructiveRed;
 

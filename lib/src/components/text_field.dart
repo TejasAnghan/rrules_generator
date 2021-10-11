@@ -46,7 +46,7 @@ class CTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height:  40,
+      height:  50,
       alignment: Alignment.center,
       child: TextFormField(
         enabled: enabled,
@@ -73,7 +73,7 @@ class CTextField extends StatelessWidget {
         decoration: InputDecoration(
           filled: true,
           isDense: true,
-          contentPadding:  const EdgeInsets.only(top:20, right: 10, left:10),
+          contentPadding:  const EdgeInsets.only(top:30, right: 10, left:10),
           fillColor: fillColor,
           hintText: placeholder,
           errorStyle: TextStyle(color: errorTextColor ?? Colors.white),
