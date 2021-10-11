@@ -2,17 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:rrule/rrule.dart';
 import 'package:rrules_generator/src/components/text_field.dart';
 import 'package:rrules_generator/src/constant.dart';
-import 'package:rrules_generator/src/themes/themes.dart';
 
 class RRuleGenerator extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
   final padding;
   // ignore: prefer_typing_uninitialized_variables
   final titleStyle;
+  // ignore: prefer_typing_uninitialized_variables
   final textStyle;
+
+  final Function(String?) onChanged;
   const RRuleGenerator({
+    required this.onChanged,
     this.textStyle = const TextStyle(color: Color(0xFF969696), fontSize: 16),
     this.titleStyle = const TextStyle(color: Colors.black, fontSize: 16),
     this.padding = const EdgeInsets.all(20),
@@ -34,7 +38,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
 
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
-  
+
   String selectedFrequency = CString.yearly;
   String selectedWeekDay = CString.monday;
   String selectedOrdinal = CString.first;
@@ -42,16 +46,19 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   String selectedEnd = CString.never;
   String selectedDay = "1";
   String finalRRule = "";
-  String everyText = "0";
-  String endAfter = "0";
+  String? everyText = "1";
+  String? endAfter = "1";
+  String rruleText = "";
+
+  //===================== var for generate rrule ===================
 
   @override
   void initState() {
     super.initState();
     _startDateContoller.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
     _endDateController.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
-    _endAfterController.text = "0";
-    _everyController.text = "0";
+    _endAfterController.text = "1";
+    _everyController.text = "1";
   }
 
   @override
@@ -83,6 +90,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       children: [
         Expanded(
           child: CTextField(
+            textStyle: widget.textStyle,
             controller: _endAfterController,
             textInputAction: TextInputAction.done,
             keyboardType: TextInputType.number,
@@ -91,11 +99,14 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
             ],
             onChanged: (val) {
               if (val.isEmpty) {
-                endAfter = "0";
+                endAfter = null;
+              } else if (val == "0") {
+                endAfter = null;
               } else {
                 endAfter = val;
               }
               setState(() {});
+              _getRRule();
             },
           ),
         ),
@@ -176,6 +187,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
                             selectedWeekDayShort.add(weekDayShort[index]);
                           }
                           setState(() {});
+                          _getRRule();
                         },
                         child: Container(
                           height: 50,
@@ -218,14 +230,14 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     );
   }
 
-  Widget buildMonthlyRepeatOn() {
+  Widget buildMonthlyRepeatOnDay() {
     return Column(
       children: [
         const Divider(),
         const SizedBox(height: 10),
         Row(
           children: [
-            buildColumn("Date", monthDropDown()),
+            buildColumn("Date", dayDropDown(count: 31)),
           ],
         ),
         const SizedBox(height: 15),
@@ -262,7 +274,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         ),
         const SizedBox(height: 20),
         cSwitchTile(
-            CString.onday, buildMonthlyRepeatOn(), RecurrenceMeta.onDay),
+            CString.onday, buildMonthlyRepeatOnDay(), RecurrenceMeta.onDay),
         const SizedBox(height: 20),
         cSwitchTile(
             CString.onThe, buildMonthlyRepeatOnThe(), RecurrenceMeta.onThe),
@@ -279,7 +291,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
           children: [
             buildColumn("Ordinal No.", ordinalDropDown()),
             const SizedBox(width: 10),
-            buildColumn("Day", dayDropDown()),
+            buildColumn("Day", weekDayDropDown()),
           ],
         ),
         const SizedBox(height: 15),
@@ -364,8 +376,11 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     return Container(
       padding: EdgeInsets.symmetric(
           horizontal: hPadding ?? 15, vertical: vPadding ?? 15),
-      decoration: const BoxDecoration(color: Colors.white, boxShadow: [
-        BoxShadow(color: Colors.black12, spreadRadius: 3, blurRadius: 20),
+      decoration: BoxDecoration(color: Colors.white, boxShadow: [
+        BoxShadow(
+            color: Colors.black.withOpacity(0.07),
+            spreadRadius: 5,
+            blurRadius: 20),
       ]),
       child: child,
     );
@@ -392,6 +407,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
                     if (value) {
                       setState(() {
                         selectedMeta = type;
+                        _getRRule();
                       });
                     }
                   })
@@ -416,6 +432,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         startDate = value;
         _startDateContoller.text = DateFormat('dd-MM-yyyy').format(value);
       }
+      _getRRule();
     });
   }
 
@@ -430,6 +447,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         endDate = value;
         _endDateController.text = DateFormat('dd-MM-yyyy').format(value);
       }
+      _getRRule();
     });
   }
 
@@ -451,12 +469,14 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         return 31;
       case CString.aug:
         return 31;
+      case CString.sep:
+        return 30;
       case CString.oct:
-        return 30;
-      case CString.nov:
         return 31;
-      case CString.dec:
+      case CString.nov:
         return 30;
+      case CString.dec:
+        return 31;
     }
     return 30;
   }
@@ -473,12 +493,15 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
               FilteringTextInputFormatter.digitsOnly
             ],
             onChanged: (val) {
-              if (val.isEmpty) {
-                everyText = "0";
+              if (val == "0") {
+                everyText = null;
+              } else if (val.isEmpty) {
+                everyText = null;
               } else {
                 everyText = val;
               }
               setState(() {});
+              _getRRule();
             },
           ),
         ),
@@ -497,6 +520,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         setState(() {
           selectedMonth = val!;
           selectedDay = "1";
+          _getRRule();
         });
       },
     );
@@ -511,6 +535,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       onChanged: (val) {
         setState(() {
           selectedDay = val!;
+          _getRRule();
         });
       },
     );
@@ -524,6 +549,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         onChanged: (val) {
           setState(() {
             selectedWeekDay = val!;
+            _getRRule();
           });
         },
         padding: const EdgeInsets.only(left: 8, right: 0));
@@ -537,6 +563,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         onChanged: (val) {
           setState(() {
             selectedOrdinal = val!;
+            _getRRule();
           });
         },
         padding: const EdgeInsets.only(left: 8, right: 0));
@@ -549,6 +576,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       onChanged: (val) {
         setState(() {
           selectedEnd = val!;
+          _getRRule();
         });
       },
       style: widget.textStyle,
@@ -576,6 +604,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
           setState(() {
             selectedFrequency = value!;
             selectedMeta = RecurrenceMeta.onThe;
+            _getRRule();
           });
         });
   }
@@ -620,5 +649,214 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
           textStyle: widget.textStyle,
           placeholder: "Start Date",
         ));
+  }
+
+  //==========================================================
+
+  _getRRule() {
+    Frequency _frequency = Frequency.yearly;
+    Set<ByWeekDayEntry> byWeekDays = {};
+    Set<int> bySetPositions = {};
+    Set<int> byMonthDays = {};
+    Set<int> byMonths = {};
+    DateTime? until;
+    int? interval;
+    int? count;
+
+    try {
+      switch (selectedFrequency) {
+        case CString.yearly:
+          _frequency = Frequency.yearly;
+          switch (selectedMeta) {
+            case RecurrenceMeta.on:
+              byMonths.add(getMonthNumber());
+              byMonthDays.add(int.parse(selectedDay));
+              break;
+            case RecurrenceMeta.onThe:
+              bySetPositions.add(getSetPosition());
+              byWeekDays.addAll(getWeekDay());
+              byMonths.add(getMonthNumber());
+              break;
+            case RecurrenceMeta.onDay:
+              break;
+          }
+          break;
+        case CString.monthly:
+          _frequency = Frequency.monthly;
+          interval = (everyText == null ? null : int.parse(everyText!));
+          switch (selectedMeta) {
+            case RecurrenceMeta.on:
+              break;
+            case RecurrenceMeta.onThe:
+              bySetPositions.add(getSetPosition());
+              byWeekDays.addAll(getWeekDay());
+              break;
+            case RecurrenceMeta.onDay:
+              byMonthDays.add(int.parse(selectedDay));
+              break;
+          }
+          break;
+
+        case CString.weekly:
+          _frequency = Frequency.weekly;
+          interval = (everyText == null ? null : int.parse(everyText!));
+
+          for (var e in selectedWeekDayShort) {
+            byWeekDays.add(getWeekDayByShortName(e));
+          }
+          break;
+
+        case CString.daily:
+          _frequency = Frequency.daily;
+          interval = (everyText == null ? null : int.parse(everyText!));
+
+          break;
+
+        case CString.hourly:
+          _frequency = Frequency.hourly;
+          interval = (everyText == null ? null : int.parse(everyText!));
+
+          break;
+      }
+
+      switch (selectedEnd) {
+        case CString.never:
+          break;
+        case CString.after:
+          count = endAfter == null ? null : int.parse(endAfter!);
+          break;
+        case CString.onDate:
+          until = endDate.toUtc();
+          break;
+      }
+
+      final rrule = RecurrenceRule(
+        frequency: _frequency,
+        interval: interval,
+        byWeekDays: byWeekDays,
+        byMonthDays: byMonthDays,
+        byMonths: byMonths,
+        bySetPositions: bySetPositions,
+        count: count,
+        until: until,
+      );
+
+      setState(() {
+        rruleText = rrule.toString();
+        widget.onChanged(rruleText);
+      });
+    } catch (e) {
+      // ignore: avoid_print
+      print(e);
+      widget.onChanged(null);
+    }
+  }
+
+  getMonthNumber() {
+    switch (selectedMonth) {
+      case CString.jan:
+        return 1;
+      case CString.feb:
+        return 2;
+      case CString.mar:
+        return 3;
+      case CString.apr:
+        return 4;
+      case CString.may:
+        return 5;
+      case CString.jun:
+        return 6;
+      case CString.jul:
+        return 7;
+      case CString.aug:
+        return 8;
+      case CString.sep:
+        return 9;
+      case CString.oct:
+        return 10;
+      case CString.nov:
+        return 11;
+      case CString.dec:
+        return 12;
+    }
+  }
+
+  getSetPosition() {
+    switch (selectedOrdinal) {
+      case CString.first:
+        return 1;
+      case CString.second:
+        return 2;
+      case CString.third:
+        return 3;
+      case CString.fourth:
+        return 4;
+      case CString.last:
+        return -1;
+    }
+  }
+
+  getWeekDay() {
+    switch (selectedWeekDay) {
+      case CString.monday:
+        return {ByWeekDayEntry(DateTime.monday)};
+      case CString.tuesday:
+        return {ByWeekDayEntry(DateTime.tuesday)};
+      case CString.wednesday:
+        return {ByWeekDayEntry(DateTime.wednesday)};
+      case CString.thursday:
+        return {ByWeekDayEntry(DateTime.thursday)};
+      case CString.friday:
+        return {ByWeekDayEntry(DateTime.friday)};
+      case CString.saturday:
+        return {ByWeekDayEntry(DateTime.saturday)};
+      case CString.sunday:
+        return {ByWeekDayEntry(DateTime.sunday)};
+
+      case CString.day:
+        return {
+          ByWeekDayEntry(DateTime.monday),
+          ByWeekDayEntry(DateTime.tuesday),
+          ByWeekDayEntry(DateTime.wednesday),
+          ByWeekDayEntry(DateTime.thursday),
+          ByWeekDayEntry(DateTime.friday),
+          ByWeekDayEntry(DateTime.saturday),
+          ByWeekDayEntry(DateTime.sunday),
+        };
+
+      case CString.weekDay:
+        return {
+          ByWeekDayEntry(DateTime.monday),
+          ByWeekDayEntry(DateTime.tuesday),
+          ByWeekDayEntry(DateTime.wednesday),
+          ByWeekDayEntry(DateTime.thursday),
+          ByWeekDayEntry(DateTime.friday),
+        };
+
+      case CString.weekEndDay:
+        return {
+          ByWeekDayEntry(DateTime.saturday),
+          ByWeekDayEntry(DateTime.sunday),
+        };
+    }
+  }
+
+  getWeekDayByShortName(day) {
+    switch (day) {
+      case CString.mon:
+        return ByWeekDayEntry(DateTime.monday);
+      case CString.tue:
+        return ByWeekDayEntry(DateTime.tuesday);
+      case CString.wed:
+        return ByWeekDayEntry(DateTime.wednesday);
+      case CString.thu:
+        return ByWeekDayEntry(DateTime.thursday);
+      case CString.fri:
+        return ByWeekDayEntry(DateTime.friday);
+      case CString.sat:
+        return ByWeekDayEntry(DateTime.saturday);
+      case CString.sun:
+        return ByWeekDayEntry(DateTime.sunday);
+    }
   }
 }

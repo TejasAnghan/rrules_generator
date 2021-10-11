@@ -21,6 +21,7 @@ class CTextField extends StatelessWidget {
   final Color? errorTextColor;
   // ignore: prefer_typing_uninitialized_variables
   final inputFormatters;
+  // ignore: prefer_typing_uninitialized_variables
   final textStyle;
 
   // ignore: use_key_in_widget_constructors

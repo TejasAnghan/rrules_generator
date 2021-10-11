@@ -30,16 +30,21 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        
         title: Text(widget.title),
       ),
-      body:const  Center(
-        child: RRuleGenerator(),
+      body: Center(
+        child: RRuleGenerator(
+          onChanged: (String? val) {
+            if (val != null) {
+               // ignore: avoid_print
+               print(val);
+            }
+          },
+        ),
       ),
     );
   }

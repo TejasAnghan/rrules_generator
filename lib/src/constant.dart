@@ -33,7 +33,7 @@ List<String> weekDay = [
   CString.monday,
   CString.tuesday,
   CString.wednesday,
-  CString.thrusday,
+  CString.thursday,
   CString.friday,
   CString.saturday,
   CString.sunday,
@@ -100,7 +100,7 @@ class CString {
   static const String monday = "Monday";
   static const String tuesday = "Tuesday";
   static const String wednesday = "Wednesday";
-  static const String thrusday = "Thrusday";
+  static const String thursday = "Thrusday";
   static const String friday = "Friday";
   static const String saturday = "Saturday";
   static const String day = "Day";
