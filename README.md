@@ -27,6 +27,10 @@ Add the widget to your app like this:
 
 see example : [example/](https://github.com/TejasAnghan/rrules_generator/tree/main/example)
 
+## Screeen Shot
+
+![demo 1](https://user-images.githubusercontent.com/68332277/137262729-ec4c68f3-414e-4391-abea-45374bcf787a.png)
+
 ## Additional information
 
    This package is use 
