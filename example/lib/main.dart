@@ -37,22 +37,22 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Column(
-        children: [
-          RRuleGenerator(
-            onChanged: (String? val) {
-              if (val != null) {
-                // ignore: avoid_print
-                print(val);
-                setState(() {
-                  rrule = val;
-                });
-              }
-            },
-          ),
-          const SizedBox(height: 20),
-          Text(rrule),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            RRuleGenerator(
+              onChanged: (String? val) {
+                if (val != null) {
+                  setState(() {
+                    rrule = val;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 20),
+            Text(rrule),
+          ],
+        ),
       ),
     );
   }

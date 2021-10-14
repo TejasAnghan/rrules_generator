@@ -61,8 +61,9 @@ class Themes {
       splashColor: Colors.orange,
       backgroundColor: primaryColor,
     ),
-    colorScheme: const ColorScheme.light(primary: primaryColor, error: errorColor),
-    textTheme: const  TextTheme(
+    colorScheme:
+        const ColorScheme.light(primary: primaryColor, error: errorColor),
+    textTheme: const TextTheme(
       headline1: TextStyle(
         fontSize: 24,
         color: primaryColor,

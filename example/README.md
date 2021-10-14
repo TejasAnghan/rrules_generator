@@ -32,14 +32,11 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
-  final String title;
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String rrule = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,18 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         children: [
           RRuleGenerator(
-            onChanged: (String? val) {
-              if (val != null) {
-                // ignore: avoid_print
-                print(val);
-                setState(() {
-                  rrule = val;
-                });
-              }
-            },
+            onChanged: (String rrule) => print(rrule),
+            // activeColor: Colors.green,
           ),
-          const SizedBox(height: 20),
-          Text(rrule),
         ],
       ),
     );

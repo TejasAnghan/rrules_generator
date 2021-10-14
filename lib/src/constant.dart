@@ -69,7 +69,7 @@ class CString {
   static const String weekly = "Weekly";
   static const String daily = "Daily";
   static const String hourly = "Hourly";
-  static const String on = "Repeat On";
+  static const String repeatOn = "Repeat On";
   static const String onThe = "Repeat On the";
   static const String onday = "Repeat On day";
   static const String jan = "Jan";
@@ -115,5 +115,6 @@ class CString {
   static const String never = "Never";
   static const String onDate = "Date";
   static const String executions = "Executions.";
-
+  static const String on = "On";
+  static const String ofMonth = "Of Month";
 }

@@ -6,6 +6,7 @@ import 'package:rrule/rrule.dart';
 import 'package:rrules_generator/src/components/text_field.dart';
 import 'package:rrules_generator/src/constant.dart';
 
+// ignore: must_be_immutable
 class RRuleGenerator extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
   final padding;
@@ -13,10 +14,12 @@ class RRuleGenerator extends StatefulWidget {
   final titleStyle;
   // ignore: prefer_typing_uninitialized_variables
   final textStyle;
+  Color activeSwitchColor;
 
   final Function(String?) onChanged;
-  const RRuleGenerator({
+   RRuleGenerator({
     required this.onChanged,
+    this.activeSwitchColor = Colors.green,
     this.textStyle = const TextStyle(color: Color(0xFF969696), fontSize: 16),
     this.titleStyle = const TextStyle(color: Colors.black, fontSize: 16),
     this.padding = const EdgeInsets.all(20),
@@ -49,7 +52,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   String? everyText = "1";
   String? endAfter = "1";
   String rruleText = "";
-  
+
   @override
   void initState() {
     super.initState();
@@ -250,9 +253,9 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         const SizedBox(height: 10),
         Row(
           children: [
-            buildColumn("Ordinal No.", ordinalDropDown()),
+            buildColumn(CString.on, ordinalDropDown()),
             const SizedBox(width: 10),
-            buildColumn("Day", weekDayDropDown()),
+            buildColumn(CString.day, weekDayDropDown()),
           ],
         ),
         const SizedBox(height: 15),
@@ -287,13 +290,13 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         const SizedBox(height: 10),
         Row(
           children: [
-            buildColumn("Ordinal No.", ordinalDropDown()),
+            buildColumn(CString.on, ordinalDropDown()),
             const SizedBox(width: 10),
-            buildColumn("Day", weekDayDropDown()),
+            buildColumn(CString.day, weekDayDropDown()),
           ],
         ),
         const SizedBox(height: 15),
-        Row(children: [buildColumn("Of Month", monthDropDown())]),
+        Row(children: [buildColumn(CString.ofMonth, monthDropDown())]),
         const SizedBox(height: 15),
       ],
     );
@@ -319,7 +322,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   Widget _buildYearlyMeta() {
     return Column(
       children: [
-        cSwitchTile(CString.on, buildYearlyRepeatOn(), RecurrenceMeta.on),
+        cSwitchTile(CString.repeatOn, buildYearlyRepeatOn(), RecurrenceMeta.on),
         const SizedBox(height: 20),
         cSwitchTile(
             CString.onThe, buildYearlyRepeatOnThe(), RecurrenceMeta.onThe),
@@ -399,7 +402,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
               Text(title, style: widget.titleStyle),
               const Spacer(),
               Switch(
-                  activeColor: Colors.green,
+                  activeColor: widget.activeSwitchColor,
                   value: type == selectedMeta,
                   onChanged: (value) {
                     if (value) {
