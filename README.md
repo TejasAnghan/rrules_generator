@@ -27,6 +27,8 @@ Add the widget to your app like this:
 
 see example : [example/](https://github.com/TejasAnghan/rrules_generator/tree/main/example)
 
-## Additional information
 
-   This package is use 
+
+## Thanks
+
+   This package is use [rrule](https://pub.dev/packages/rrule) pakage for calculate the recurrence rule from user input.
