@@ -49,9 +49,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   String? everyText = "1";
   String? endAfter = "1";
   String rruleText = "";
-
-  //===================== var for generate rrule ===================
-
+  
   @override
   void initState() {
     super.initState();

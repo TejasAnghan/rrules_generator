@@ -30,21 +30,29 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String rrule = "";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: RRuleGenerator(
-          onChanged: (String? val) {
-            if (val != null) {
-               // ignore: avoid_print
-               print(val);
-            }
-          },
-        ),
+      body: Column(
+        children: [
+          RRuleGenerator(
+            onChanged: (String? val) {
+              if (val != null) {
+                // ignore: avoid_print
+                print(val);
+                setState(() {
+                  rrule = val;
+                });
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+          Text(rrule),
+        ],
       ),
     );
   }
