@@ -1,16 +1,71 @@
+
+
+
+[example/lib/main.dart](https://github.com/TejasAnghan/rrules_generator/tree/main/example/lib/main.dart)
+
 # example
 
-A new Flutter project.
+```dart
 
-## Getting Started
+import 'package:flutter/material.dart';
+import 'package:rrules_generator/rrules_generator.dart';
 
-This project is a starting point for a Flutter application.
+void main() {
+  runApp(const MyApp());
+}
 
-A few resources to get you started if this is your first Flutter project:
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'RRules Generator',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(title: 'RRules Generator'),
+    );
+  }
+}
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String rrule = "";
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Column(
+        children: [
+          RRuleGenerator(
+            onChanged: (String? val) {
+              if (val != null) {
+                // ignore: avoid_print
+                print(val);
+                setState(() {
+                  rrule = val;
+                });
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+          Text(rrule),
+        ],
+      ),
+    );
+  }
+}
+
+```
+
