@@ -17,7 +17,7 @@ class RRuleGenerator extends StatefulWidget {
   Color activeSwitchColor;
 
   final Function(String?) onChanged;
-   RRuleGenerator({
+  RRuleGenerator({
     required this.onChanged,
     this.activeSwitchColor = Colors.green,
     this.textStyle = const TextStyle(color: Color(0xFF969696), fontSize: 16),
@@ -31,17 +31,20 @@ class RRuleGenerator extends StatefulWidget {
 }
 
 class _RRuleGeneratorState extends State<RRuleGenerator> {
+  //controllers
   final TextEditingController _endAfterController = TextEditingController();
   final TextEditingController _startDateContoller = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _everyController = TextEditingController();
-
+  //
   RecurrenceMeta selectedMeta = RecurrenceMeta.onThe;
   List<String> selectedWeekDayShort = [];
 
+  // Date variables
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
 
+  // String variables
   String selectedFrequency = CString.yearly;
   String selectedWeekDay = CString.monday;
   String selectedOrdinal = CString.first;
@@ -422,7 +425,9 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
 
   //============================================================================
 
+  // for get start date
   _onStartDateTap() {
+    //Date Picker
     showDatePicker(
             context: context,
             initialDate: DateTime.now(),
@@ -437,7 +442,9 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     });
   }
 
+  // for get end date
   _onEndDateTap() {
+    //Date Picker
     showDatePicker(
             context: context,
             initialDate: DateTime.now(),
@@ -654,6 +661,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
 
   //==========================================================
 
+  // for generate rrule
   _getRRule() {
     Frequency _frequency = Frequency.yearly;
     Set<ByWeekDayEntry> byWeekDays = {};
@@ -753,6 +761,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     }
   }
 
+  // used for get month number
   getMonthNumber() {
     switch (selectedMonth) {
       case CString.jan:
@@ -782,6 +791,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     }
   }
 
+  // used for get setPosition
   getSetPosition() {
     switch (selectedOrdinal) {
       case CString.first:
@@ -797,6 +807,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     }
   }
 
+  // used for get weekday
   getWeekDay() {
     switch (selectedWeekDay) {
       case CString.monday:
@@ -842,6 +853,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     }
   }
 
+  // used for get shortname of month
   getWeekDayByShortName(day) {
     switch (day) {
       case CString.mon:

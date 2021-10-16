@@ -1,6 +1,6 @@
 name: rrules_generator
 description: rrules_generator is a flutter plugin which is used for generating the recurrence rules.
-version: 0.0.2
+version: 0.0.2+1
 homepage: https://github.com/TejasAnghan/rrules_generator
 
 environment:
