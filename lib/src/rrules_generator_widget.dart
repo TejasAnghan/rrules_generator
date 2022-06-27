@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:rrule/rrule.dart';
 import 'package:rrules_generator/src/components/text_field.dart';
 import 'package:rrules_generator/src/constant.dart';
+import 'package:rrule/src/by_week_day_entry.dart';
+
+final df = DateFormat('yyyyMMddTHHmmss');
 
 // ignore: must_be_immutable
 class RRuleGenerator extends StatefulWidget {
@@ -14,11 +19,16 @@ class RRuleGenerator extends StatefulWidget {
   final titleStyle;
   // ignore: prefer_typing_uninitialized_variables
   final textStyle;
+
+  RecurrenceRule? rrule;
+
   Color activeSwitchColor;
 
   final Function(String?) onChanged;
+
   RRuleGenerator({
     required this.onChanged,
+    this.rrule,
     this.activeSwitchColor = Colors.green,
     this.textStyle = const TextStyle(color: Color(0xFF969696), fontSize: 16),
     this.titleStyle = const TextStyle(color: Colors.black, fontSize: 16),
@@ -27,10 +37,10 @@ class RRuleGenerator extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<RRuleGenerator> createState() => _RRuleGeneratorState();
+  State<RRuleGenerator> createState() => RRuleGeneratorState();
 }
 
-class _RRuleGeneratorState extends State<RRuleGenerator> {
+class RRuleGeneratorState extends State<RRuleGenerator> {
   //controllers
   final TextEditingController _endAfterController = TextEditingController();
   final TextEditingController _startDateContoller = TextEditingController();
@@ -39,7 +49,6 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   //
   RecurrenceMeta selectedMeta = RecurrenceMeta.onThe;
   List<String> selectedWeekDayShort = [];
-
   // Date variables
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
@@ -59,10 +68,47 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   @override
   void initState() {
     super.initState();
-    _startDateContoller.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
-    _endDateController.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
-    _endAfterController.text = "1";
     _everyController.text = "1";
+    if (widget.rrule != null) {
+      updateRrule(widget.rrule!);
+    }
+    _startDateContoller.text = DateFormat('dd-MM-yyyy').format(startDate);
+    _endDateController.text = DateFormat('dd-MM-yyyy').format(endDate);
+    _endAfterController.text = "1";
+  }
+
+  updateRrule(RecurrenceRule rrule) {
+    setState(() {
+      if (rrule.startDate != null) {
+        startDate = rrule.startDate!.toLocal();
+      }
+      if (rrule.until != null) {
+        endDate = rrule.until!.toLocal();
+        selectedEnd = CString.onDate;
+      }
+      if (rrule.frequency != null) {
+        if (rrule.frequency.toString() == "DAILY") {
+          selectedFrequency = CString.daily;
+        } else if (rrule.frequency.toString() == "YEARLY") {
+          selectedFrequency = CString.yearly;
+        } else if (rrule.frequency.toString() == "MONTHLY") {
+          selectedFrequency = CString.monthly;
+        } else if (rrule.frequency.toString() == "WEEKLY") {
+          selectedFrequency = CString.weekly;
+        } else if (rrule.frequency.toString() == "HOURLY") {
+          selectedFrequency = CString.hourly;
+        }
+      }
+      if (rrule.interval != null) {
+        everyText = rrule.interval!.toString();
+        _everyController.text = rrule.interval!.toString();
+      }
+      _startDateContoller.text = DateFormat('dd-MM-yyyy').format(startDate);
+      _endDateController.text = DateFormat('dd-MM-yyyy').format(endDate);
+    });
+
+    // rrule -> sdate
+    // setState ( start date -> sdate )
   }
 
   @override
@@ -98,9 +144,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
             controller: _endAfterController,
             textInputAction: TextInputAction.done,
             keyboardType: TextInputType.number,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly
-            ],
+            inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
             onChanged: (val) {
               if (val.isEmpty) {
                 endAfter = null;
@@ -150,9 +194,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       children: [
         cContainer(
           child: Row(
-            children: [
-              buildColumn("Every", _buildEveryTextField(CString.hours))
-            ],
+            children: [buildColumn("Every", _buildEveryTextField(CString.hours))],
           ),
         ),
       ],
@@ -164,9 +206,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       children: [
         cContainer(
           child: Row(
-            children: [
-              buildColumn("Every", _buildEveryTextField(CString.days))
-            ],
+            children: [buildColumn("Every", _buildEveryTextField(CString.days))],
           ),
         ),
       ],
@@ -184,8 +224,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
                 (index) => Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          if (selectedWeekDayShort
-                              .contains(weekDayShort[index])) {
+                          if (selectedWeekDayShort.contains(weekDayShort[index])) {
                             selectedWeekDayShort.remove(weekDayShort[index]);
                           } else {
                             selectedWeekDayShort.add(weekDayShort[index]);
@@ -198,8 +237,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
                           margin: const EdgeInsets.only(right: 2),
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                              color: selectedWeekDayShort
-                                      .contains(weekDayShort[index])
+                              color: selectedWeekDayShort.contains(weekDayShort[index])
                                   ? const Color(0xFF0359DA)
                                   : const Color(0xFF0359DA).withOpacity(0.3),
                               borderRadius: BorderRadius.circular(5)),
@@ -221,9 +259,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       children: [
         cContainer(
           child: Row(
-            children: [
-              buildColumn("Every", _buildEveryTextField(CString.week))
-            ],
+            children: [buildColumn("Every", _buildEveryTextField(CString.week))],
           ),
         ),
         const SizedBox(
@@ -271,17 +307,13 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       children: [
         cContainer(
           child: Row(
-            children: [
-              buildColumn("Every", _buildEveryTextField(CString.month))
-            ],
+            children: [buildColumn("Every", _buildEveryTextField(CString.month))],
           ),
         ),
         const SizedBox(height: 20),
-        cSwitchTile(
-            CString.onday, buildMonthlyRepeatOnDay(), RecurrenceMeta.onDay),
+        cSwitchTile(CString.onday, buildMonthlyRepeatOnDay(), RecurrenceMeta.onDay),
         const SizedBox(height: 20),
-        cSwitchTile(
-            CString.onThe, buildMonthlyRepeatOnThe(), RecurrenceMeta.onThe),
+        cSwitchTile(CString.onThe, buildMonthlyRepeatOnThe(), RecurrenceMeta.onThe),
       ],
     );
   }
@@ -327,8 +359,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       children: [
         cSwitchTile(CString.repeatOn, buildYearlyRepeatOn(), RecurrenceMeta.on),
         const SizedBox(height: 20),
-        cSwitchTile(
-            CString.onThe, buildYearlyRepeatOnThe(), RecurrenceMeta.onThe),
+        cSwitchTile(CString.onThe, buildYearlyRepeatOnThe(), RecurrenceMeta.onThe),
       ],
     );
   }
@@ -375,16 +406,11 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     );
   }
 
-  Widget cContainer(
-      {required Widget child, double? hPadding, double? vPadding}) {
+  Widget cContainer({required Widget child, double? hPadding, double? vPadding}) {
     return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: hPadding ?? 15, vertical: vPadding ?? 15),
+      padding: EdgeInsets.symmetric(horizontal: hPadding ?? 15, vertical: vPadding ?? 15),
       decoration: BoxDecoration(color: Colors.white, boxShadow: [
-        BoxShadow(
-            color: Colors.black.withOpacity(0.07),
-            spreadRadius: 5,
-            blurRadius: 20),
+        BoxShadow(color: Colors.black.withOpacity(0.07), spreadRadius: 5, blurRadius: 20),
       ]),
       child: child,
     );
@@ -428,13 +454,9 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   // for get start date
   _onStartDateTap() {
     //Date Picker
-    showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2050, 12, 31))
-        .then((value) {
+    showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2050, 12, 31)).then((value) {
       if (value != null) {
+        log(value.toString());
         startDate = value;
         _startDateContoller.text = DateFormat('dd-MM-yyyy').format(value);
       }
@@ -445,12 +467,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   // for get end date
   _onEndDateTap() {
     //Date Picker
-    showDatePicker(
-            context: context,
-            initialDate: DateTime.now(),
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2050, 12, 31))
-        .then((value) {
+    showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2050, 12, 31)).then((value) {
       if (value != null) {
         endDate = value;
         _endDateController.text = DateFormat('dd-MM-yyyy').format(value);
@@ -497,9 +514,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
             controller: _everyController,
             textInputAction: TextInputAction.done,
             keyboardType: TextInputType.number,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly
-            ],
+            inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
             onChanged: (val) {
               if (val == "0") {
                 everyText = null;
@@ -537,8 +552,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
   Widget dayDropDown({int? count}) {
     return _buildDropDown(
       style: widget.textStyle,
-      list: List.generate(count ?? _getMonthDayCount(selectedMonth),
-          (index) => (index + 1).toString()),
+      list: List.generate(count ?? _getMonthDayCount(selectedMonth), (index) => (index + 1).toString()),
       value: selectedDay,
       onChanged: (val) {
         setState(() {
@@ -627,9 +641,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     return Container(
       width: width,
       padding: padding,
-      decoration: BoxDecoration(
-          border: Border.all(color: Colors.black),
-          borderRadius: BorderRadius.circular(7)),
+      decoration: BoxDecoration(border: Border.all(color: Colors.black), borderRadius: BorderRadius.circular(7)),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           style: style,
@@ -671,6 +683,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
     DateTime? until;
     int? interval;
     int? count;
+    DateTime? startdate;
 
     try {
       switch (selectedFrequency) {
@@ -727,7 +740,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
 
           break;
       }
-
+      startdate = startDate.toUtc();
       switch (selectedEnd) {
         case CString.never:
           break;
@@ -740,6 +753,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
       }
 
       final rrule = RecurrenceRule(
+        startDate: startdate,
         frequency: _frequency,
         interval: interval,
         byWeekDays: byWeekDays,
@@ -749,11 +763,7 @@ class _RRuleGeneratorState extends State<RRuleGenerator> {
         count: count,
         until: until,
       );
-
-      setState(() {
-        rruleText = rrule.toString();
-        widget.onChanged(rruleText);
-      });
+      widget.onChanged(rrule.toString().replaceAll("RRULE:", ""));
     } catch (e) {
       // ignore: avoid_print
       print(e);

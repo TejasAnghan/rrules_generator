@@ -11,7 +11,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  rrule:
+    git:
+      url: git@github.com:3axislabs/rrule.git
+      ref: main
   rrules_generator:
     path: ../
 

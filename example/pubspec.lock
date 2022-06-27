@@ -117,19 +117,21 @@ packages:
     source: hosted
     version: "1.8.0"
   rrule:
-    dependency: transitive
+    dependency: "direct main"
     description:
-      name: rrule
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.2.3"
+      path: "."
+      ref: main
+      resolved-ref: eecc227b26ea850ce5da1fe3f2e6eb0dfb3ee59e
+      url: "git@github.com:3axislabs/rrule.git"
+    source: git
+    version: "0.3.0"
   rrules_generator:
     dependency: "direct main"
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.0.2+1"
+    version: "0.1.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -163,13 +165,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0"
-  supercharged_dart:
-    dependency: transitive
-    description:
-      name: supercharged_dart
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.1.1"
   term_glyph:
     dependency: transitive
     description:
@@ -184,6 +179,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.8"
+  time:
+    dependency: transitive
+    description:
+      name: time
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.1"
   typed_data:
     dependency: transitive
     description:
