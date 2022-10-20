@@ -8,6 +8,7 @@ import 'package:rrule/rrule.dart';
 import 'package:rrules_generator/src/components/text_field.dart';
 import 'package:rrules_generator/src/constant.dart';
 import 'package:rrule/src/by_week_day_entry.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 final df = DateFormat('yyyyMMddTHHmmss');
 
@@ -15,8 +16,10 @@ final df = DateFormat('yyyyMMddTHHmmss');
 class RRuleGenerator extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
   final padding;
+
   // ignore: prefer_typing_uninitialized_variables
   final titleStyle;
+
   // ignore: prefer_typing_uninitialized_variables
   final textStyle;
 
@@ -46,9 +49,11 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
   final TextEditingController _startDateContoller = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _everyController = TextEditingController();
+
   //
   RecurrenceMeta selectedMeta = RecurrenceMeta.onThe;
   List<String> selectedWeekDayShort = [];
+
   // Date variables
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
@@ -72,7 +77,7 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
     if (widget.rrule != null) {
       updateRrule(widget.rrule!);
     }
-    _startDateContoller.text = DateFormat('dd-MM-yyyy').format(startDate);
+    _startDateContoller.text = DateFormat('dd-MM-yyyy HH : mm').format(startDate);
     _endDateController.text = DateFormat('dd-MM-yyyy').format(endDate);
     _endAfterController.text = "1";
   }
@@ -103,7 +108,7 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
         everyText = rrule.interval!.toString();
         _everyController.text = rrule.interval!.toString();
       }
-      _startDateContoller.text = DateFormat('dd-MM-yyyy').format(startDate);
+      _startDateContoller.text = DateFormat('dd-MM-yyyy HH : mm').format(startDate);
       _endDateController.text = DateFormat('dd-MM-yyyy').format(endDate);
     });
 
@@ -452,28 +457,42 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
   //============================================================================
 
   // for get start date
-  _onStartDateTap() {
+  _onStartDateTap() async {
     //Date Picker
-    showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2050, 12, 31)).then((value) {
-      if (value != null) {
-        log(value.toString());
-        startDate = value;
-        _startDateContoller.text = DateFormat('dd-MM-yyyy').format(value);
-      }
-      _getRRule();
-    });
+    DateTime? dateTime = await showOmniDateTimePicker(
+      context: context,
+      type: OmniDateTimePickerType.dateAndTime,
+      isShowSeconds: false,
+      startInitialDate: startDate,
+      startFirstDate: DateTime(1600).subtract(const Duration(days: 3652)),
+      startLastDate: DateTime.now().add(
+        const Duration(days: 3652),
+      ),
+      borderRadius: const Radius.circular(16),
+    );
+
+    startDate = dateTime!;
+    _startDateContoller.text = DateFormat('dd-MM-yyyy HH : mm').format(dateTime);
+    _getRRule();
   }
 
   // for get end date
-  _onEndDateTap() {
-    //Date Picker
-    showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2050, 12, 31)).then((value) {
-      if (value != null) {
-        endDate = value;
-        _endDateController.text = DateFormat('dd-MM-yyyy').format(value);
-      }
-      _getRRule();
-    });
+  _onEndDateTap() async {
+    DateTime? dateTime = await showOmniDateTimePicker(
+      context: context,
+      type: OmniDateTimePickerType.date,
+      isShowSeconds: false,
+      startInitialDate: endDate,
+      startFirstDate: DateTime(1600).subtract(const Duration(days: 3652)),
+      startLastDate: DateTime.now().add(
+        const Duration(days: 3652),
+      ),
+      borderRadius: const Radius.circular(16),
+    );
+
+    endDate = dateTime!;
+    _endDateController.text = DateFormat('dd-MM-yyyy HH : mm').format(dateTime);
+    _getRRule();
   }
 
   int _getMonthDayCount(String selectedMonth) {
@@ -659,6 +678,8 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
       ),
     );
   }
+
+  TimeOfDay _time = const TimeOfDay(hour: 00, minute: 00);
 
   Widget _startDateTextField() {
     return GestureDetector(

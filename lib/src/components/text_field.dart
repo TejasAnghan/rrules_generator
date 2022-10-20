@@ -67,8 +67,7 @@ class CTextField extends StatelessWidget {
         textInputAction: textInputAction,
         // scrollPhysics: Themes.defaultPhysics,
         style: textStyle,
-        onFieldSubmitted: (_) =>
-            FocusScope.of(context).requestFocus(requestFocus),
+        onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(requestFocus),
         textAlignVertical: TextAlignVertical.center,
         onTap: () {},
         decoration: InputDecoration(

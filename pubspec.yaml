@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   intl: 0.17.0
+  omni_datetime_picker: 0.1.2
 
   rrule:
     git:
