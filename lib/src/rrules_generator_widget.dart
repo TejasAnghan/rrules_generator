@@ -464,10 +464,8 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
       type: OmniDateTimePickerType.dateAndTime,
       isShowSeconds: false,
       startInitialDate: startDate,
-      startFirstDate: DateTime(1600).subtract(const Duration(days: 3652)),
-      startLastDate: DateTime.now().add(
-        const Duration(days: 3652),
-      ),
+      startFirstDate: DateTime.now().subtract(const Duration(days: 730)),
+      startLastDate: DateTime.now().add(const Duration(days: 730)),
       borderRadius: const Radius.circular(16),
     );
 
@@ -483,10 +481,8 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
       type: OmniDateTimePickerType.date,
       isShowSeconds: false,
       startInitialDate: endDate,
-      startFirstDate: DateTime(1600).subtract(const Duration(days: 3652)),
-      startLastDate: DateTime.now().add(
-        const Duration(days: 3652),
-      ),
+      startFirstDate: DateTime.now().subtract(const Duration(days: 730)),
+      startLastDate: DateTime.now().add(const Duration(days: 730)),
       borderRadius: const Radius.circular(16),
     );
 
@@ -678,8 +674,6 @@ class RRuleGeneratorState extends State<RRuleGenerator> {
       ),
     );
   }
-
-  TimeOfDay _time = const TimeOfDay(hour: 00, minute: 00);
 
   Widget _startDateTextField() {
     return GestureDetector(
